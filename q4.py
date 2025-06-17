@@ -3,104 +3,84 @@ import numpy as np
 from scipy.io import loadmat
 from skimage import io, color
 import matplotlib.pyplot as plt
-import mywarper  # Assuming this module is provided
+import mywarper
 
-# Directory paths
+# Set directories
 images_dir = './data/images'
 landmarks_dir = './data/landmarks'
 output_dir = './results/4'
 os.makedirs(output_dir, exist_ok=True)
 
-# Load file paths
+# Load image and landmark files
 image_files = sorted([os.path.join(images_dir, f) for f in os.listdir(images_dir) if f.endswith('.jpg')])
 landmark_files = sorted([os.path.join(landmarks_dir, f) for f in os.listdir(landmarks_dir) if f.endswith('.mat')])
 
-# Verify data availability
-assert len(image_files) >= 1000 and len(landmark_files) >= 1000, "Insufficient images or landmarks"
-
-# Preprocessing functions
+# Define loading functions
 def load_and_preprocess_image(file_path):
-    img = io.imread(file_path) / 255.0  # Normalize to [0, 1]
+    img = io.imread(file_path) / 255.0
     img_hsv = color.rgb2hsv(img)
-    v_channel = img_hsv[:, :, 2]  # Use V-channel
-    return np.stack([v_channel] * 3, axis=-1)  # Replicate to 3 channels for mywarper
+    v_channel = img_hsv[:, :, 2]
+    return np.stack([v_channel] * 3, axis=-1)
 
 def load_landmarks(file_path):
     mat_data = loadmat(file_path)
     landmarks = mat_data.get('lms')
-    assert landmarks.shape == (68, 2), f"Invalid landmark shape in {file_path}"
-    landmarks[:, 1] = 128 - landmarks[:, 1]  # Flip y-coordinates
-    return landmarks
+    if landmarks is None:
+        raise ValueError(f"No 'lms' data found in {file_path}")
+    if landmarks.shape == (68, 2):
+        landmarks_flipped = landmarks.copy()
+        landmarks_flipped[:, 1] = 128 - landmarks_flipped[:, 1]
+        return landmarks_flipped
+    else:
+        raise ValueError(f"Invalid landmark shape in {file_path}")
 
-# Load all data
-images_all = np.array([load_and_preprocess_image(f) for f in image_files[:1000]])
-landmarks_all = np.array([load_landmarks(f) for f in landmark_files[:1000]])
-
-# Train-test split
+# Load training data (first 800 samples)
 np.random.seed(42)
 indices = np.random.permutation(1000)
-train_indices, test_indices = indices[:800], indices[800:]
-images_train, images_test = images_all[train_indices], images_all[test_indices]
-landmarks_train, landmarks_test = landmarks_all[train_indices], landmarks_all[test_indices]
+train_indices = indices[:800]
+images_train = np.array([load_and_preprocess_image(image_files[i]) for i in train_indices])
+landmarks_train = np.array([load_landmarks(landmark_files[i]) for i in train_indices])
 
-# Compute eigen-warpings
+# Compute mean landmarks and center the data
 mean_landmarks = np.mean(landmarks_train, axis=0)  # Shape: (68, 2)
-landmarks_train_centered = landmarks_train - mean_landmarks
-U_warp, _, _ = np.linalg.svd(landmarks_train_centered.reshape(800, -1).T, full_matrices=False)
-eigen_warpings = U_warp[:, :10]  # Top 10 eigen-warpings, Shape: (136, 10)
+landmarks_train_centered = landmarks_train - mean_landmarks  # Shape: (800, 68, 2)
+landmarks_train_centered_flat = landmarks_train_centered.reshape(800, 136)  # Shape: (800, 136)
 
-# Warp training images to mean landmark position
-aligned_images_train = []
-for i in range(800):
-    coeffs = eigen_warpings.T @ landmarks_train_centered[i].flatten()
-    recon_landmarks = (eigen_warpings @ coeffs).reshape(68, 2) + mean_landmarks
-    warped_img = mywarper.warp(images_train[i], landmarks_train[i], mean_landmarks)
-    aligned_images_train.append(warped_img)
-aligned_images_train = np.array(aligned_images_train)
+# PCA for landmarks (eigen-warpings)
+U_warp, S_warp, _ = np.linalg.svd(landmarks_train_centered_flat.T, full_matrices=False)
+variances_warp = (S_warp[:10] ** 2) / (800 - 1)  # Variances for top 10 components
 
-# Compute eigen-faces
+# Warp training images to mean landmarks and compute mean face
+aligned_images_train = np.array([mywarper.warp(images_train[i], landmarks_train[i], mean_landmarks) for i in range(800)])
 mean_face = np.mean(aligned_images_train.reshape(800, -1), axis=0)  # Shape: (49152,)
-aligned_train_centered = aligned_images_train.reshape(800, -1) - mean_face
-U_face, _, _ = np.linalg.svd(aligned_train_centered.T, full_matrices=False)
-eigen_faces = U_face[:, :50]  # Top 50 eigen-faces, Shape: (49152, 50)
+aligned_images_train_centered = aligned_images_train.reshape(800, -1) - mean_face  # Shape: (800, 49152)
 
-# Reconstruction function
-def reconstruct_test_image(img, landmarks, K):
-    coeffs_warp = eigen_warpings.T @ (landmarks - mean_landmarks).flatten()
-    recon_landmarks = (eigen_warpings @ coeffs_warp).reshape(68, 2) + mean_landmarks
-    warped_img = mywarper.warp(img, landmarks, mean_landmarks)
-    coeffs_face = eigen_faces[:, :K].T @ (warped_img.flatten() - mean_face)
-    recon_warped = (eigen_faces[:, :K] @ coeffs_face + mean_face).reshape(128, 128, 3)
-    return mywarper.warp(recon_warped, mean_landmarks, recon_landmarks)
+# PCA for appearance (eigen-faces)
+U_face, S_face, _ = np.linalg.svd(aligned_images_train_centered.T, full_matrices=False)
+variances_face = (S_face[:50] ** 2) / (800 - 1)  # Variances for top 50 components
 
-# Reconstruct and visualize 20 test images
-K = 50
-reconstructed_images = [reconstruct_test_image(images_test[i], landmarks_test[i], K) for i in range(20)]
-plt.figure(figsize=(20, 8))
-for i in range(20):
-    plt.subplot(4, 10, i + 1)
-    plt.imshow(images_test[i][:, :, 0], cmap='gray')
-    plt.title('Original')
+# Generate and display 50 synthesized faces
+plt.figure(figsize=(20, 10))
+for i in range(50):
+    # Sample coefficients for landmarks
+    c = np.random.normal(0, np.sqrt(variances_warp), size=10)
+    new_landmarks_flat = mean_landmarks.flatten() + U_warp[:, :10] @ c
+    new_landmarks = new_landmarks_flat.reshape(68, 2)
+
+    # Sample coefficients for appearance
+    d = np.random.normal(0, np.sqrt(variances_face), size=50)
+    new_appearance_flat = mean_face + U_face[:, :50] @ d
+    new_appearance = new_appearance_flat.reshape(128, 128, 3)
+
+    # Warp the new appearance to the new landmarks
+    synthesized_face = mywarper.warp(new_appearance, mean_landmarks, new_landmarks)
+    synthesized_face = np.clip(synthesized_face, 0, 1)
+
+    # Plot the synthesized face
+    plt.subplot(5, 10, i + 1)
+    plt.imshow(synthesized_face, cmap='gray')
     plt.axis('off')
-    plt.subplot(4, 10, i + 21)
-    plt.imshow(reconstructed_images[i][:, :, 0], cmap='gray')
-    plt.title('Reconstructed')
-    plt.axis('off')
+
 plt.tight_layout()
-plt.savefig(os.path.join(output_dir, 'task4_reconstructions.png'))
-
-# Compute reconstruction errors
-K_values = [1, 5, 10, 15, 20, 25, 30, 35, 40, 45, 50]
-errors = []
-for K in K_values:
-    recon_test = np.array([reconstruct_test_image(img, lm, K) for img, lm in zip(images_test, landmarks_test)])
-    error = np.mean(np.sum((images_test.reshape(200, -1) - recon_test.reshape(200, -1)) ** 2, axis=1) / (128 * 128 * 3))
-    errors.append(error)
-
-plt.figure(figsize=(8, 6))
-plt.plot(K_values, errors, marker='o')
-plt.xlabel('Number of Eigen-Faces (K)')
-plt.ylabel('Average Reconstruction Error per Pixel')
-plt.title('Reconstruction Error vs. K')
-plt.grid(True)
-plt.savefig(os.path.join(output_dir, 'task4_error_plot.png'))
+plt.savefig(os.path.join(output_dir, 'synthesized_faces.png'))
+plt.close()

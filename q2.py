@@ -85,8 +85,37 @@ plt.tight_layout()
 plt.savefig(os.path.join(output_dir, 'eigen_warpings.png'))
 
 # Reconstruct test landmarks with K=50
+# Reconstruct test landmarks with K=50
 K = 50
 landmarks_test_reconstructed = reconstruct_landmarks(landmarks_test_centered, U, K) + mean_landmarks[:, np.newaxis]
+
+# Create a single plot with 10 original and 10 reconstructed landmarks
+plt.figure(figsize=(15, 20))  # Wider and taller to accommodate 20 subplots
+for i in range(10):  # First 10 test samples (indices 0 to 9)
+    # Original landmarks
+    orig_landmarks = landmarks_test[:, i].reshape(68, 2)
+    plt.subplot(4, 5, i + 1)  # Top row (1 to 10)
+    plt.scatter(orig_landmarks[:, 0], orig_landmarks[:, 1], s=10, c='b', label='Original')
+    plt.title(f'Test {i + 801} Original')
+    plt.axis('equal')
+    plt.grid(True)
+    if i == 0:
+        plt.legend()
+
+    # Reconstructed landmarks
+    recon_landmarks = landmarks_test_reconstructed[:, i].reshape(68, 2)
+    plt.subplot(4, 5, i + 11)  # Bottom row (11 to 20)
+    plt.scatter(recon_landmarks[:, 0], recon_landmarks[:, 1], s=10, c='r', label='Reconstructed')
+    plt.title(f'Test {i + 801} Reconstructed')
+    plt.axis('equal')
+    plt.grid(True)
+    if i == 0:
+        plt.legend()
+
+plt.tight_layout()
+plt.savefig(os.path.join(output_dir, 'test_landmarks_801_810.png'))
+plt.close()
+
 
 # Compute and plot reconstruction error for K = 1, 5, 10, ..., 50
 K_values = [1, 5, 10, 15, 20, 25, 30, 35, 40, 45, 50]
