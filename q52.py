@@ -98,7 +98,14 @@ for i in range(800):
         S_w_land += np.outer(landmarks_train_pca[:, i] - mu_land_1, landmarks_train_pca[:, i] - mu_land_1)
 W_land = np.linalg.solve(S_w_land + 1e-5 * np.eye(10), mu_land_1 - mu_land_0)
 W_land = W_land / np.linalg.norm(W_land)
-W_land_2d = np.column_stack([W_land.real, np.zeros(10)])  # First direction, second is zero for 2D
+
+# Derive second direction orthogonal to W_land using within-class scatter matrix
+S_eigvals, S_eigvecs = np.linalg.eigh(S_w_land)
+# Sort eigenvectors by eigenvalues and select the second direction (orthogonal to W_land)
+idx = np.argsort(S_eigvals)
+W_land_2 = S_eigvecs[:, idx[1]]  # Second smallest eigenvalue vector (approximately orthogonal)
+W_land_2d = np.column_stack([W_land, W_land_2])
+W_land_2d = W_land_2d / np.linalg.norm(W_land_2d, axis=0)  # Normalize columns
 
 # FLD for images (appearance)
 mu_face_0 = np.mean(images_train_pca[:, labels_train == 0], axis=1)
@@ -111,8 +118,8 @@ for i in range(800):
         S_w_face += np.outer(images_train_pca[:, i] - mu_face_1, images_train_pca[:, i] - mu_face_1)
 W_face = np.linalg.solve(S_w_face + 1e-5 * np.eye(50), mu_face_1 - mu_face_0)
 W_face = W_face / np.linalg.norm(W_face)
-evals, evecs = np.linalg.eigh(np.outer(W_face, W_face))  # Get eigenvalues and eigenvectors
-idx = np.argsort(evals)[::-1]  # Sort in descending order
+evals, evecs = np.linalg.eigh(np.outer(W_face, W_face))
+idx = np.argsort(evals)[::-1]
 W_face_2d = evecs[:, idx[:2]]  # Take top 2 eigenvectors
 
 # Project to 2D feature space
@@ -121,32 +128,29 @@ proj_land_test = W_land_2d.T @ landmarks_test_pca
 proj_face_train = W_face_2d.T @ images_train_pca
 proj_face_test = W_face_2d.T @ images_test_pca
 
-# Combine training and test data for plotting
-proj_land_all = np.hstack([proj_land_train, proj_land_test])
-proj_face_all = np.hstack([proj_face_train, proj_face_test])
-labels_all = np.hstack([labels_train, labels_test])
-
-# Visualize separability
+# Visualize Fisher Face projections
 plt.figure(figsize=(12, 5))
 
+# Fisher Face Projection (Geometry) - Training Data Only
 plt.subplot(1, 2, 1)
-plt.scatter(proj_land_all[0, labels_all == 0], proj_land_all[1, labels_all == 0], c='blue', alpha=0.5, label='Male')
-plt.scatter(proj_land_all[0, labels_all == 1], proj_land_all[1, labels_all == 1], c='red', alpha=0.5, label='Female')
-plt.xlabel('FLD Direction 1 (Geometry)')
-plt.ylabel('FLD Direction 2 (Geometry)')
-plt.title('2D Projection (Geometry)')
+plt.scatter(proj_land_train[0, labels_train == 0], proj_land_train[1, labels_train == 0], c='blue', alpha=0.5, label='Male')
+plt.scatter(proj_land_train[0, labels_train == 1], proj_land_train[1, labels_train == 1], c='red', alpha=0.5, label='Female')
+plt.xlabel('Fisher Face Direction 1 (Geometry)')
+plt.ylabel('Fisher Face Direction 2 (Geometry)')
+plt.title('Fisher Face (Geometry)')
 plt.legend()
 plt.grid(True)
 
+# Fisher Face Projection (Appearance) - Training Data Only
 plt.subplot(1, 2, 2)
-plt.scatter(proj_face_all[0, labels_all == 0], proj_face_all[1, labels_all == 0], c='blue', alpha=0.5, label='Male')
-plt.scatter(proj_face_all[0, labels_all == 1], proj_face_all[1, labels_all == 1], c='red', alpha=0.5, label='Female')
-plt.xlabel('FLD Direction 1 (Appearance)')
-plt.ylabel('FLD Direction 2 (Appearance)')
-plt.title('2D Projection (Appearance)')
+plt.scatter(proj_face_train[0, labels_train == 0], proj_face_train[1, labels_train == 0], c='blue', alpha=0.5, label='Male')
+plt.scatter(proj_face_train[0, labels_train == 1], proj_face_train[1, labels_train == 1], c='red', alpha=0.5, label='Female')
+plt.xlabel('Fisher Face Direction 1 (Appearance)')
+plt.ylabel('Fisher Face Direction 2 (Appearance)')
+plt.title('Fisher Face (Appearance)')
 plt.legend()
 plt.grid(True)
 
 plt.tight_layout()
-plt.savefig(os.path.join(output_dir, 'fld_2d_projections.png'))
+plt.savefig(os.path.join(output_dir, 'fisher_face_projections.png'))
 plt.close()
