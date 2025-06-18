@@ -39,8 +39,8 @@ The project is organized into three core tasks:
 
 **Visuals:**
 - ![Eigen-Warpings](figures/eigen_warpings.png)
-- ![Landmark Reconstructions](figures/landmark_reconstruction.png)
-- ![Landmark Error Plot](figures/landmark_error.png)
+- ![Landmark Reconstructions](figures/test_landmarks_801_810.png)
+- ![Landmark Error Plot](figures/reconstruction_error.png)
 
 ---
 
@@ -62,7 +62,7 @@ The project is organized into three core tasks:
 - **Results:** 50 novel faces with varied characteristics.
 
 **Visuals:**
-- ![Synthesized Faces](images/synthetic_faces.png)
+- ![Synthesized Faces](results/3_2/synthetic_faces.png)
 
 ---
 
@@ -74,9 +74,9 @@ The project is organized into three core tasks:
 - **Results:** 13.5% classification error. Appearance features outperform shape-only.
 
 **Visuals:**
-- ![Fisher Face](images/fisher_face.png)
-- ![Gender Projection Histograms](images/gender_histograms.png)
-- ![FLD Scatter Plots](images/fld_scatter.png)
+- ![Fisher Face](results/3_1/fisher_face.png)
+- ![Gender Projection Histograms](results/3_1/fld_projections_test.png)
+- ![FLD Scatter Plots](results/3_2/fld_2d_projections.png)
 
 ---
 
