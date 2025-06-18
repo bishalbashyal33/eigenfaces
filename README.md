@@ -25,9 +25,9 @@ The project is organized into three core tasks:
 - **Error Analysis:** Reconstruction error decreases as `K` increases.
 
 **Visuals:**
-- ![Eigenfaces Visualization](images/eigenfaces.png)
-- ![Reconstructed Faces](images/reconstructed_faces.png)
-- ![Reconstruction Error Plot](images/reconstruction_error.png)
+- ![Eigenfaces Visualization](results/eigenfaces.png)
+- ![Reconstructed Faces](results/reconstructed_images.png)
+- ![Reconstruction Error Plot](results/reconstruction_error.png)
 
 ---
 
@@ -38,9 +38,9 @@ The project is organized into three core tasks:
 - **Error Analysis:** Error decreases with more components, especially up to `K = 10`.
 
 **Visuals:**
-- ![Eigen-Warpings](images/eigen_warpings.png)
-- ![Landmark Reconstructions](images/landmark_reconstruction.png)
-- ![Landmark Error Plot](images/landmark_error.png)
+- ![Eigen-Warpings](figures/eigen_warpings.png)
+- ![Landmark Reconstructions](figures/landmark_reconstruction.png)
+- ![Landmark Error Plot](figures/landmark_error.png)
 
 ---
 
