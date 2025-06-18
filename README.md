@@ -25,9 +25,9 @@ The project is organized into three core tasks:
 - **Error Analysis:** Reconstruction error decreases as `K` increases.
 
 **Visuals:**
-- ![Eigenfaces Visualization](results/eigenfaces.png)
-- ![Reconstructed Faces](results/reconstructed_images.png)
-- ![Reconstruction Error Plot](results/reconstruction_error.png)
+ ![Eigenfaces Visualization](results/eigenfaces.png)
+ ![Reconstructed Faces](results/reconstructed_images.png)
+ ![Reconstruction Error Plot](results/reconstruction_error.png)
 
 ---
 
@@ -38,9 +38,9 @@ The project is organized into three core tasks:
 - **Error Analysis:** Error decreases with more components, especially up to `K = 10`.
 
 **Visuals:**
-- ![Eigen-Warpings](figures/eigen_warpings.png)
-- ![Landmark Reconstructions](figures/test_landmarks_801_810.png)
-- ![Landmark Error Plot](figures/reconstruction_error.png)
+ ![Eigen-Warpings](figures/eigen_warpings.png)
+ ![Landmark Reconstructions](figures/test_landmarks_801_810.png)
+ ![Landmark Error Plot](figures/reconstruction_error.png)
 
 ---
 
@@ -50,9 +50,9 @@ The project is organized into three core tasks:
 - **Results:** Faces preserve identity, but fine details may be distorted.
 
 **Visuals:**
-- ![Reconstruction Pipeline](results/3/test_image_1_steps.png)
-- ![Reconstructed Faces](results/3/reconstructed_faces.png)
-- ![Per-Pixel Error Plot](results/3/reconstruction_error.png)
+ ![Reconstruction Pipeline](results/3/test_image_1_steps.png)
+ ![Reconstructed Faces](results/3/reconstructed_faces.png)
+ ![Per-Pixel Error Plot](results/3/reconstruction_error.png)
 
 ---
 
@@ -62,7 +62,7 @@ The project is organized into three core tasks:
 - **Results:** 50 novel faces with varied characteristics.
 
 **Visuals:**
-- ![Synthesized Faces](results/4/synthesized_faces.png)
+ ![Synthesized Faces](results/4/synthesized_faces.png)
 
 ---
 
@@ -74,9 +74,9 @@ The project is organized into three core tasks:
 - **Results:** 13.5% classification error. Appearance features outperform shape-only.
 
 **Visuals:**
-- ![Fisher Face](results/3_1/fisher_face.png)
-- ![Gender Projection Histograms](results/3_1/fld_projections_test.png)
-- ![FLD Scatter Plots](results/3_2/fld_2d_projections.png)
+ ![Fisher Face](results/3_1/fisher_face.png)
+ ![Gender Projection Histograms](results/3_1/fld_projections_test.png)
+ ![FLD Scatter Plots](results/3_2/fld_2d_projections.png)
 
 ---
 
