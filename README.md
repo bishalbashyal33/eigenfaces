@@ -50,9 +50,9 @@ The project is organized into three core tasks:
 - **Results:** Faces preserve identity, but fine details may be distorted.
 
 **Visuals:**
-- ![Reconstruction Pipeline](images/combined_pipeline.png)
-- ![Reconstructed Faces](images/combined_faces.png)
-- ![Per-Pixel Error Plot](images/per_pixel_error.png)
+- ![Reconstruction Pipeline](images/test_image_1_steps.png)
+- ![Reconstructed Faces](images/reconstructed_faces.png)
+- ![Per-Pixel Error Plot](images/reconstruction_error.png)
 
 ---
 
@@ -62,7 +62,7 @@ The project is organized into three core tasks:
 - **Results:** 50 novel faces with varied characteristics.
 
 **Visuals:**
-- ![Synthesized Faces](results/3_2/synthetic_faces.png)
+- ![Synthesized Faces](results/4/synthetic_faces.png)
 
 ---
 
