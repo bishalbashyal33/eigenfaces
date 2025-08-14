@@ -1,4 +1,4 @@
-# Face Analysis and Synthesis Using PCA and Fisher Linear Discriminant
+# Face Analysis and Synthesis Using PCA and Fisher Linear Discriminant (Academic Project)
 
 ## Overview
 
